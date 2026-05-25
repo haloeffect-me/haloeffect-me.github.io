@@ -501,7 +501,7 @@ h3 {
 }
 
 .selection-status.is-ready {
-  color: var(--accent-strong);
+  color: #2f7d32;
 }
 
 .selection-status.is-active {
@@ -659,23 +659,6 @@ h3 {
   color: var(--muted);
 }
 
-.stop-body,
-.saved-plan-body {
-  display: grid;
-  grid-template-columns: 92px 1fr;
-  gap: 14px;
-  align-items: start;
-}
-
-.stop-thumb,
-.saved-plan-thumb {
-  width: 92px;
-  height: 92px;
-  object-fit: cover;
-  border-radius: 16px;
-  background: rgba(21, 17, 13, 0.08);
-}
-
 .saved-plans {
   margin-top: 18px;
 }
@@ -712,6 +695,27 @@ h3 {
 
 .saved-plan-links {
   margin-top: 12px;
+}
+
+.place-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.place-link:hover,
+.place-link:focus-visible,
+.saved-route-link:hover,
+.saved-route-link:focus-visible,
+.place-site-link:hover,
+.place-site-link:focus-visible {
+  text-decoration: underline;
+}
+
+.place-site-link,
+.result-site {
+  display: inline-flex;
+  margin-top: 10px;
+  color: var(--accent-strong);
 }
 
 code {
@@ -810,17 +814,6 @@ code {
   .saved-route-link {
     width: 100%;
     justify-content: center;
-  }
-
-  .stop-body,
-  .saved-plan-body {
-    grid-template-columns: 1fr;
-  }
-
-  .stop-thumb,
-  .saved-plan-thumb {
-    width: 100%;
-    height: 180px;
   }
 
   .itinerary-summary {

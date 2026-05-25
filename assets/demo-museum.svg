@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-labelledby="title desc">
+  <title id="title">Museum stop</title>
+  <desc id="desc">Stylized museum building illustration.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f3c9d8"/>
+      <stop offset="100%" stop-color="#d88aa2"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="320" rx="36" fill="url(#bg)"/>
+  <circle cx="78" cy="78" r="34" fill="#fff3ef" opacity=".5"/>
+  <polygon points="160,72 72,114 248,114" fill="#fff8f3"/>
+  <rect x="82" y="114" width="156" height="108" rx="8" fill="#fff8f3"/>
+  <rect x="104" y="136" width="20" height="86" fill="#d8708d"/>
+  <rect x="150" y="136" width="20" height="86" fill="#d8708d"/>
+  <rect x="196" y="136" width="20" height="86" fill="#d8708d"/>
+  <rect x="64" y="222" width="192" height="18" rx="9" fill="#8a4b5a"/>
+  <text x="30" y="286" fill="#5a2f3b" font-family="Arial, sans-serif" font-size="25" font-weight="700">Bourse de Commerce</text>
+</svg>

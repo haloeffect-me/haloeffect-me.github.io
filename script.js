@@ -74,6 +74,7 @@ const demoStops = [
     lat: 48.8627066,
     lon: 2.3458515,
     notes: "Start with coffee and a slow breakfast.",
+    websiteUrl: "https://motorscoffee.com/",
   },
   {
     type: "Museum",
@@ -83,6 +84,7 @@ const demoStops = [
     lat: 48.8615473,
     lon: 2.3421071,
     notes: "Main exhibition block.",
+    websiteUrl: "https://www.pinaultcollection.com/fr/boursedecommerce/infos-pratiques",
   },
   {
     type: "Lunch",
@@ -92,6 +94,7 @@ const demoStops = [
     lat: 48.8601667,
     lon: 2.3623982,
     notes: "Crepes and cider.",
+    websiteUrl: "https://en.breizhcafe.com/le-marais",
   },
   {
     type: "Store",
@@ -101,6 +104,7 @@ const demoStops = [
     lat: 48.8594512,
     lon: 2.3680815,
     notes: "Design store stop.",
+    websiteUrl: "https://merci-merci.com/en",
   },
 ];
 
@@ -190,69 +194,34 @@ function buildShareUrl() {
   return shareUrl.toString();
 }
 
-function parseWikipediaTag(wikipediaTag) {
-  if (!wikipediaTag || !wikipediaTag.includes(":")) {
-    return null;
+function normalizeWebsiteUrl(value) {
+  if (!value) {
+    return "";
   }
 
-  const [language, ...titleParts] = wikipediaTag.split(":");
-  const title = titleParts.join(":").trim();
+  const trimmed = value.trim();
 
-  if (!language || !title) {
-    return null;
+  if (!trimmed) {
+    return "";
   }
 
-  return { language, title };
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+
+  return `https://${trimmed}`;
 }
 
-async function fetchPlaceImage(wikipediaTag) {
-  const parsed = parseWikipediaTag(wikipediaTag);
+function renderPlaceTitle(place, className = "") {
+  const title = escapeHtml(place.name);
+  const websiteUrl = normalizeWebsiteUrl(place.websiteUrl);
+  const classes = className ? ` class="${className}"` : "";
 
-  if (!parsed) {
-    return null;
+  if (!websiteUrl) {
+    return `<span${classes}>${title}</span>`;
   }
 
-  const response = await fetch(
-    `https://${parsed.language}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(parsed.title)}`,
-    {
-      headers: {
-        Accept: "application/json",
-      },
-    }
-  );
-
-  if (!response.ok) {
-    return null;
-  }
-
-  const data = await response.json();
-
-  return {
-    imageUrl: data.thumbnail?.source || null,
-    imageAlt: data.title || parsed.title,
-  };
-}
-
-async function enrichStopImage(stopId, wikipediaTag) {
-  try {
-    const media = await fetchPlaceImage(wikipediaTag);
-
-    if (!media?.imageUrl) {
-      return;
-    }
-
-    const stop = state.stops.find((item) => item.id === stopId);
-
-    if (!stop) {
-      return;
-    }
-
-    stop.imageUrl = media.imageUrl;
-    stop.imageAlt = media.imageAlt;
-    renderItinerary();
-  } catch (error) {
-    // Missing images are acceptable.
-  }
+  return `<a${classes} href="${escapeHtml(websiteUrl)}" target="_blank" rel="noreferrer">${title}</a>`;
 }
 
 function updateSelectionStatus(text, isReady) {
@@ -273,8 +242,15 @@ function renderSearchResults(results) {
       const primary = result.name || result.display_name.split(",")[0];
       return `
         <button class="result-option" type="button" data-result-index="${index}">
-          <strong>${escapeHtml(primary)}</strong>
-          <span>${escapeHtml(result.display_name)}</span>
+          <div>
+            <strong>${escapeHtml(primary)}</strong>
+            <span>${escapeHtml(result.display_name)}</span>
+            ${
+              result.websiteUrl
+                ? '<span class="result-site">Website available after you add this stop.</span>'
+                : ""
+            }
+          </div>
         </button>
       `;
     })
@@ -298,7 +274,7 @@ function renderStopList() {
           <div class="stop-head">
             <div>
               <span class="stop-chip">${escapeHtml(stop.type)}</span>
-              <h4>${escapeHtml(stop.name)}</h4>
+              <h4>${renderPlaceTitle(stop, "place-link")}</h4>
               <div class="stop-meta">
                 ${stop.time ? `${escapeHtml(stop.time)} · ` : ""}${escapeHtml(stop.address)}
               </div>
@@ -319,18 +295,14 @@ function renderStopList() {
               </button>
             </div>
           </div>
-          <div class="stop-body">
-            ${
-              stop.imageUrl
-                ? `<img class="stop-thumb" src="${escapeHtml(stop.imageUrl)}" alt="${escapeHtml(
-                    stop.imageAlt || stop.name
-                  )}" loading="lazy" />`
-                : `<div class="stop-thumb" aria-hidden="true"></div>`
-            }
-            <div>
-              ${stop.notes ? `<p class="helper-note">${escapeHtml(stop.notes)}</p>` : ""}
-            </div>
-          </div>
+          ${stop.notes ? `<p class="helper-note">${escapeHtml(stop.notes)}</p>` : ""}
+          ${
+            stop.websiteUrl
+              ? `<a class="place-site-link" href="${escapeHtml(
+                  normalizeWebsiteUrl(stop.websiteUrl)
+                )}" target="_blank" rel="noreferrer">Open place website</a>`
+              : ""
+          }
         </article>
       `
     )
@@ -351,12 +323,19 @@ function renderTimeline() {
           <div class="timeline-head">
             <div>
               <span class="stop-chip">Stop ${index + 1}</span>
-              <h4>${escapeHtml(stop.name)}</h4>
+              <h4>${renderPlaceTitle(stop, "place-link")}</h4>
             </div>
             ${stop.time ? `<span class="stop-chip">${escapeHtml(stop.time)}</span>` : ""}
           </div>
           <p>${escapeHtml(stop.address)}</p>
           ${stop.notes ? `<p class="timeline-note">${escapeHtml(stop.notes)}</p>` : ""}
+          ${
+            stop.websiteUrl
+              ? `<a class="place-site-link" href="${escapeHtml(
+                  normalizeWebsiteUrl(stop.websiteUrl)
+                )}" target="_blank" rel="noreferrer">Open place website</a>`
+              : ""
+          }
         </article>
       `
     )
@@ -461,7 +440,6 @@ function renderSavedPlans() {
     .slice()
     .sort((a, b) => new Date(b.savedAt || 0) - new Date(a.savedAt || 0))
     .map((plan) => {
-      const leadStop = plan.stops?.[0];
       const routeLinks =
         plan.stops && plan.stops.length > 1
           ? plan.stops
@@ -477,6 +455,17 @@ function renderSavedPlans() {
               })
               .join("")
           : '<div class="empty-state">Add at least two stops to create route links.</div>';
+      const placeLinks =
+        plan.stops && plan.stops.some((stop) => stop.websiteUrl)
+          ? plan.stops
+              .filter((stop) => stop.websiteUrl)
+              .map(
+                (stop) => `<a class="saved-route-link" href="${escapeHtml(
+                  normalizeWebsiteUrl(stop.websiteUrl)
+                )}" target="_blank" rel="noreferrer">${escapeHtml(stop.name)}</a>`
+              )
+              .join("")
+          : "";
 
       return `
         <article class="saved-plan-card">
@@ -487,29 +476,19 @@ function renderSavedPlans() {
               <div class="saved-plan-meta">${plan.stops?.length || 0} stops</div>
             </div>
           </div>
-          <div class="saved-plan-body">
-            ${
-              leadStop?.imageUrl
-                ? `<img class="saved-plan-thumb" src="${escapeHtml(leadStop.imageUrl)}" alt="${escapeHtml(
-                    leadStop.imageAlt || leadStop.name
-                  )}" loading="lazy" />`
-                : `<div class="saved-plan-thumb" aria-hidden="true"></div>`
-            }
-            <div>
-              <div class="saved-plan-meta">
-                Last saved ${new Date(plan.savedAt).toLocaleString()}
-              </div>
-              <div class="saved-plan-actions">
-                <button class="mini-button" type="button" data-plan-action="open" data-plan-id="${escapeHtml(
-                  plan.id
-                )}">Open</button>
-                <button class="mini-button" type="button" data-plan-action="delete" data-plan-id="${escapeHtml(
-                  plan.id
-                )}">Delete</button>
-              </div>
-              <div class="saved-plan-links">${routeLinks}</div>
-            </div>
+          <div class="saved-plan-meta">
+            Last saved ${new Date(plan.savedAt).toLocaleString()}
           </div>
+          <div class="saved-plan-actions">
+            <button class="mini-button" type="button" data-plan-action="open" data-plan-id="${escapeHtml(
+              plan.id
+            )}">Open</button>
+            <button class="mini-button" type="button" data-plan-action="delete" data-plan-id="${escapeHtml(
+              plan.id
+            )}">Delete</button>
+          </div>
+          ${placeLinks ? `<div class="saved-plan-links">${placeLinks}</div>` : ""}
+          <div class="saved-plan-links">${routeLinks}</div>
         </article>
       `;
     })
@@ -604,7 +583,7 @@ async function searchPlaces() {
       display_name: item.display_name,
       lat: Number(item.lat),
       lon: Number(item.lon),
-      wikipediaTag: item.extratags?.wikipedia || "",
+      websiteUrl: normalizeWebsiteUrl(item.extratags?.website || item.extratags?.["contact:website"] || ""),
     }));
 
     state.selectedResult = null;
@@ -658,9 +637,7 @@ function addStop(event) {
     lat: state.selectedResult.lat,
     lon: state.selectedResult.lon,
     notes: stopNotesInput.value.trim(),
-    wikipediaTag: state.selectedResult.wikipediaTag || "",
-    imageUrl: null,
-    imageAlt: "",
+    websiteUrl: state.selectedResult.websiteUrl || "",
   });
 
   stopForm.reset();
@@ -672,10 +649,6 @@ function addStop(event) {
   resultsList.innerHTML = "";
   updateSelectionStatus("Stop added. Search for the next place.", false);
   renderItinerary();
-
-  if (state.stops[state.stops.length - 1]?.wikipediaTag) {
-    enrichStopImage(stopId, state.stops[state.stops.length - 1].wikipediaTag);
-  }
 }
 
 function moveStop(index, direction) {
@@ -904,7 +877,10 @@ dayTitleInput.addEventListener("input", renderItinerary);
 loadDemoButton.addEventListener("click", () => {
   dayTitleInput.value = "Saturday in Paris";
   dayCityInput.value = "Paris";
-  state.stops = demoStops.map((stop) => ({ ...stop }));
+  state.stops = demoStops.map((stop) => ({
+    ...stop,
+    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+  }));
   renderItinerary();
   updateSelectionStatus("Demo day loaded.", false);
 });
