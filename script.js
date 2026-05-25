@@ -147,6 +147,10 @@ function saveUsers(users) {
   localStorage.setItem(STORAGE_KEYS.users, JSON.stringify(users));
 }
 
+function getPlanStorageKey(username) {
+  return `halo-effect-plan-${username}`;
+}
+
 function getCurrentPlan() {
   return {
     dayTitle: dayTitleInput.value.trim() || "My Day",
@@ -652,6 +656,7 @@ function resetAccount() {
 
   delete users[username];
   saveUsers(users);
+  localStorage.removeItem(getPlanStorageKey(username));
 
   if (state.currentUser === username) {
     state.currentUser = null;
@@ -663,11 +668,38 @@ function resetAccount() {
 }
 
 function savePlan() {
-  setShareStatus("Saved.", true);
+  if (!state.currentUser) {
+    setShareStatus("Sign in first to save this itinerary on this device.", false);
+    return;
+  }
+
+  localStorage.setItem(
+    getPlanStorageKey(state.currentUser),
+    JSON.stringify(getCurrentPlan())
+  );
+  setShareStatus(`Saved for ${state.currentUser}.`, true);
 }
 
 function loadSavedPlan() {
-  setShareStatus("Load Saved Day is disabled.", false);
+  if (!state.currentUser) {
+    setShareStatus("Sign in first to load a saved day.", false);
+    return;
+  }
+
+  const raw = localStorage.getItem(getPlanStorageKey(state.currentUser));
+
+  if (!raw) {
+    setShareStatus(`No saved itinerary found for ${state.currentUser}.`, false);
+    return;
+  }
+
+  try {
+    applyPlan(JSON.parse(raw));
+    setShareStatus(`Loaded saved itinerary for ${state.currentUser}.`, true);
+    jumpToItinerary();
+  } catch (error) {
+    setShareStatus("Saved itinerary could not be read.", false);
+  }
 }
 
 function restoreSession() {
