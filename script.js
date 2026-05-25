@@ -40,29 +40,13 @@ const itineraryTitle = document.querySelector("#itinerary-title");
 const itinerarySummary = document.querySelector("#itinerary-summary");
 const loadDemoButton = document.querySelector("#load-demo");
 const clearAllButton = document.querySelector("#clear-all");
-const authForm = document.querySelector("#auth-form");
-const authUsernameInput = document.querySelector("#auth-username");
-const authPasswordInput = document.querySelector("#auth-password");
-const authStatus = document.querySelector("#auth-status");
-const signUpButton = document.querySelector("#sign-up-button");
-const signOutButton = document.querySelector("#sign-out-button");
-const resetAccountButton = document.querySelector("#reset-account-button");
-const saveDayButton = document.querySelector("#save-day");
-const loadDayButton = document.querySelector("#load-day");
-const shareWhatsappButton = document.querySelector("#share-whatsapp");
+const shareWhatsappBottomButton = document.querySelector("#share-whatsapp-bottom");
 const shareStatus = document.querySelector("#share-status");
-const savedPlans = document.querySelector("#saved-plans");
 
 const state = {
   selectedResult: null,
   stops: [],
-  currentUser: null,
   activePlanId: null,
-};
-
-const STORAGE_KEYS = {
-  users: "halo-effect-users",
-  session: "halo-effect-session",
 };
 
 const demoStops = [
@@ -130,30 +114,13 @@ function makeCitymapperLink(start, end) {
   return `https://citymapper.com/directions?${params.toString()}`;
 }
 
-function setAuthStatus(text, isActive) {
-  authStatus.textContent = text;
-  authStatus.classList.toggle("is-active", isActive);
-}
-
 function setShareStatus(text, isActive) {
+  if (!shareStatus) {
+    return;
+  }
+
   shareStatus.textContent = text;
   shareStatus.classList.toggle("is-active", isActive);
-}
-
-function getUsers() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEYS.users) || "{}");
-  } catch (error) {
-    return {};
-  }
-}
-
-function saveUsers(users) {
-  localStorage.setItem(STORAGE_KEYS.users, JSON.stringify(users));
-}
-
-function getPlanStorageKey(username) {
-  return `halo-effect-plans-${username}`;
 }
 
 function getCurrentPlan() {
@@ -392,108 +359,6 @@ function jumpToItinerary() {
   });
 }
 
-function refreshSessionUi() {
-  if (state.currentUser) {
-    setAuthStatus(`Signed in as ${state.currentUser}.`, true);
-    renderSavedPlans();
-  } else {
-    setAuthStatus("Not signed in.", false);
-    savedPlans.innerHTML =
-      '<div class="empty-state">Sign in to keep multiple saved itineraries on this device.</div>';
-  }
-}
-
-function getSavedPlans() {
-  if (!state.currentUser) {
-    return [];
-  }
-
-  try {
-    return JSON.parse(localStorage.getItem(getPlanStorageKey(state.currentUser)) || "[]");
-  } catch (error) {
-    return [];
-  }
-}
-
-function saveSavedPlans(plans) {
-  if (!state.currentUser) {
-    return;
-  }
-
-  localStorage.setItem(getPlanStorageKey(state.currentUser), JSON.stringify(plans));
-}
-
-function renderSavedPlans() {
-  if (!state.currentUser) {
-    return;
-  }
-
-  const plans = getSavedPlans();
-
-  if (plans.length === 0) {
-    savedPlans.innerHTML =
-      '<div class="empty-state">No saved itineraries yet. Save the current day to keep it here.</div>';
-    return;
-  }
-
-  savedPlans.innerHTML = plans
-    .slice()
-    .sort((a, b) => new Date(b.savedAt || 0) - new Date(a.savedAt || 0))
-    .map((plan) => {
-      const routeLinks =
-        plan.stops && plan.stops.length > 1
-          ? plan.stops
-              .slice(0, -1)
-              .map((stop, index) => {
-                const next = plan.stops[index + 1];
-                return `<a class="saved-route-link" href="${makeCitymapperLink(
-                  stop,
-                  next
-                )}" target="_blank" rel="noreferrer">Leg ${index + 1}: ${escapeHtml(
-                  stop.name
-                )} to ${escapeHtml(next.name)}</a>`;
-              })
-              .join("")
-          : '<div class="empty-state">Add at least two stops to create route links.</div>';
-      const placeLinks =
-        plan.stops && plan.stops.some((stop) => stop.websiteUrl)
-          ? plan.stops
-              .filter((stop) => stop.websiteUrl)
-              .map(
-                (stop) => `<a class="saved-route-link" href="${escapeHtml(
-                  normalizeWebsiteUrl(stop.websiteUrl)
-                )}" target="_blank" rel="noreferrer">${escapeHtml(stop.name)}</a>`
-              )
-              .join("")
-          : "";
-
-      return `
-        <article class="saved-plan-card">
-          <div class="saved-plan-head">
-            <div>
-              <span class="stop-chip">${escapeHtml(plan.city || "Saved day")}</span>
-              <h4>${escapeHtml(plan.dayTitle || "Untitled day")}</h4>
-              <div class="saved-plan-meta">${plan.stops?.length || 0} stops</div>
-            </div>
-          </div>
-          <div class="saved-plan-meta">
-            Last saved ${new Date(plan.savedAt).toLocaleString()}
-          </div>
-          <div class="saved-plan-actions">
-            <button class="mini-button" type="button" data-plan-action="open" data-plan-id="${escapeHtml(
-              plan.id
-            )}">Open</button>
-            <button class="mini-button" type="button" data-plan-action="delete" data-plan-id="${escapeHtml(
-              plan.id
-            )}">Delete</button>
-          </div>
-          ${placeLinks ? `<div class="saved-plan-links">${placeLinks}</div>` : ""}
-          <div class="saved-plan-links">${routeLinks}</div>
-        </article>
-      `;
-    })
-    .join("");
-}
 
 function generateShareText() {
   const plan = getCurrentPlan();
@@ -663,173 +528,6 @@ function moveStop(index, direction) {
   renderItinerary();
 }
 
-function signUp() {
-  const username = authUsernameInput.value.trim();
-  const password = authPasswordInput.value;
-
-  if (!username || !password) {
-    setAuthStatus("Enter a username and password first.", false);
-    return;
-  }
-
-  const users = getUsers();
-
-  if (users[username]) {
-    setAuthStatus("That username already exists on this device.", false);
-    return;
-  }
-
-  users[username] = { password };
-  saveUsers(users);
-  setAuthStatus(`Local account created for ${username}.`, true);
-}
-
-function signIn(event) {
-  event.preventDefault();
-
-  const username = authUsernameInput.value.trim();
-  const password = authPasswordInput.value;
-  const users = getUsers();
-
-  if (!username || !password) {
-    setAuthStatus("Enter both username and password.", false);
-    return;
-  }
-
-  if (!users[username] || users[username].password !== password) {
-    setAuthStatus("Username or password does not match this browser.", false);
-    return;
-  }
-
-  state.currentUser = username;
-  localStorage.setItem(STORAGE_KEYS.session, username);
-  refreshSessionUi();
-}
-
-function signOut() {
-  state.currentUser = null;
-  localStorage.removeItem(STORAGE_KEYS.session);
-  refreshSessionUi();
-}
-
-function resetAccount() {
-  const username = state.currentUser || authUsernameInput.value.trim();
-
-  if (!username) {
-    setAuthStatus("Enter or sign in to the account you want to reset.", false);
-    return;
-  }
-
-  const users = getUsers();
-
-  if (!users[username]) {
-    setAuthStatus("That local account does not exist in this browser.", false);
-    return;
-  }
-
-  delete users[username];
-  saveUsers(users);
-  localStorage.removeItem(getPlanStorageKey(username));
-
-  if (state.currentUser === username) {
-    state.currentUser = null;
-    localStorage.removeItem(STORAGE_KEYS.session);
-  }
-
-  state.activePlanId = null;
-  authForm.reset();
-  savedPlans.innerHTML =
-    '<div class="empty-state">Account reset. Create a new local account or sign in again.</div>';
-  setAuthStatus(`Reset local account ${username}.`, true);
-}
-
-function savePlan() {
-  if (!state.currentUser) {
-    setShareStatus("Sign in first to save this itinerary on this device.", false);
-    return;
-  }
-
-  const plans = getSavedPlans();
-  const currentPlan = getCurrentPlan();
-  const planId = currentPlan.id || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  const nextPlan = { ...currentPlan, id: planId, savedAt: new Date().toISOString() };
-  const existingIndex = plans.findIndex((plan) => plan.id === planId);
-
-  state.activePlanId = planId;
-
-  if (existingIndex >= 0) {
-    plans[existingIndex] = nextPlan;
-  } else {
-    plans.push(nextPlan);
-  }
-
-  saveSavedPlans(plans);
-  renderSavedPlans();
-  setShareStatus(`Saved for ${state.currentUser}.`, true);
-}
-
-function loadSavedPlan() {
-  if (!state.currentUser) {
-    setShareStatus("Sign in first to load a saved day.", false);
-    return;
-  }
-
-  const plans = getSavedPlans();
-
-  if (plans.length === 0) {
-    setShareStatus(`No saved itineraries found for ${state.currentUser}.`, false);
-    return;
-  }
-
-  applyPlan(plans[plans.length - 1]);
-  setShareStatus(`Loaded the latest saved itinerary for ${state.currentUser}.`, true);
-  jumpToItinerary();
-}
-
-function restoreSession() {
-  const savedUser = localStorage.getItem(STORAGE_KEYS.session);
-
-  if (!savedUser) {
-    refreshSessionUi();
-    return;
-  }
-
-  state.currentUser = savedUser;
-  authUsernameInput.value = savedUser;
-  refreshSessionUi();
-}
-
-savedPlans.addEventListener("click", (event) => {
-  const trigger = event.target.closest("[data-plan-action]");
-
-  if (!trigger || !state.currentUser) {
-    return;
-  }
-
-  const planId = trigger.dataset.planId;
-  const action = trigger.dataset.planAction;
-  const plans = getSavedPlans();
-  const plan = plans.find((item) => item.id === planId);
-
-  if (action === "open" && plan) {
-    applyPlan(plan);
-    setShareStatus(`Opened ${plan.dayTitle}.`, true);
-    jumpToItinerary();
-  }
-
-  if (action === "delete") {
-    const remainingPlans = plans.filter((item) => item.id !== planId);
-    saveSavedPlans(remainingPlans);
-
-    if (state.activePlanId === planId) {
-      state.activePlanId = null;
-    }
-
-    renderSavedPlans();
-    setShareStatus("Deleted saved itinerary.", true);
-  }
-});
-
 stopList.addEventListener("click", (event) => {
   const trigger = event.target.closest("[data-action]");
 
@@ -864,13 +562,7 @@ stopQueryInput.addEventListener("keydown", (event) => {
 });
 
 stopForm.addEventListener("submit", addStop);
-authForm.addEventListener("submit", signIn);
-signUpButton.addEventListener("click", signUp);
-signOutButton.addEventListener("click", signOut);
-resetAccountButton.addEventListener("click", resetAccount);
-saveDayButton.addEventListener("click", savePlan);
-loadDayButton.addEventListener("click", loadSavedPlan);
-shareWhatsappButton.addEventListener("click", shareOnWhatsapp);
+shareWhatsappBottomButton.addEventListener("click", shareOnWhatsapp);
 
 dayTitleInput.addEventListener("input", renderItinerary);
 
@@ -891,6 +583,5 @@ clearAllButton.addEventListener("click", () => {
   renderItinerary();
 });
 
-restoreSession();
 loadSharedPlanFromUrl();
 renderItinerary();
