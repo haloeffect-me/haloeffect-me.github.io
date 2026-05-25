@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Halo Effect | Day Planner</title>
+    <meta
+      name="description"
+      content="Plan a day by adding places, arranging stops, and generating Citymapper links between each leg."
+    />
+    <meta property="og:title" content="Halo Effect | Day Planner" />
+    <meta
+      property="og:description"
+      content="Create a lightweight day itinerary with place lookup and Citymapper links."
+    />
+    <meta property="og:type" content="website" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="site-header">
+        <a class="brand" href="#top">Halo Effect</a>
+        <nav class="site-nav" aria-label="Primary">
+          <a href="#planner">Planner</a>
+          <a href="#itinerary">Itinerary</a>
+        </nav>
+      </header>
+
+      <form class="auth-compact auth-compact-row" id="auth-form">
+        <span class="auth-compact-label">Account</span>
+        <input
+          id="auth-username"
+          name="username"
+          type="text"
+          placeholder="username"
+          autocomplete="username"
+        />
+        <input
+          id="auth-password"
+          name="password"
+          type="password"
+          placeholder="password"
+          autocomplete="current-password"
+        />
+        <button class="ghost-button ghost-button-small" id="sign-up-button" type="button">
+          Create
+        </button>
+        <button class="button button-primary button-small" type="submit">
+          Sign In
+        </button>
+        <button class="ghost-button ghost-button-small" id="sign-out-button" type="button">
+          Out
+        </button>
+        <button
+          class="ghost-button ghost-button-small"
+          id="reset-account-button"
+          type="button"
+        >
+          Reset
+        </button>
+        <div class="selection-status auth-inline-status" id="auth-status">
+          Not signed in.
+        </div>
+      </form>
+
+      <main id="top">
+        <section class="hero reveal">
+          <div class="hero-copy">
+            <p class="eyebrow">haloeffect.github.io</p>
+            <h1>Make a day, stop by stop.</h1>
+            <p class="lede">
+              Add a cafe, museum, store, or any address. The planner resolves the
+              place, builds your route order, and creates Citymapper directions
+              links from one stop to the next.
+            </p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="#planner">Start Planning</a>
+            </div>
+          </div>
+
+          <div class="hero-orbit" aria-hidden="true">
+            <div class="orb orb-core"></div>
+            <img
+              class="orb-sticker"
+              src="katherine_sticker.png"
+              alt=""
+            />
+            <div class="orb orb-ring orb-ring-one"></div>
+            <div class="orb orb-ring orb-ring-two"></div>
+            <div class="signal-card">
+              <span>Katherine</span>
+              <strong>"Let me show you Paris, you Frenchman."</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="utility-layout reveal">
+          <article class="panel action-panel">
+            <div class="panel-head">
+              <div>
+                <p class="panel-label">Actions</p>
+                <h3>Save or share this plan</h3>
+              </div>
+            </div>
+            <div class="action-row">
+              <button class="button button-secondary" id="load-day" type="button">
+                Load Saved Day
+              </button>
+              <button class="button button-secondary" id="share-whatsapp" type="button">
+                Share on WhatsApp
+              </button>
+            </div>
+            <p class="helper-note" id="share-status">
+              Save stores the itinerary in this browser. WhatsApp shares a link
+              back to this same itinerary on this website.
+            </p>
+          </article>
+        </section>
+
+        <section class="planner-layout reveal" id="planner">
+          <article class="panel panel-highlight planner-panel">
+            <div class="panel-head">
+              <div>
+                <p class="panel-label">Planner</p>
+                <h2>Build today’s route.</h2>
+              </div>
+              <button class="ghost-button" id="load-demo" type="button">
+                Load Demo Day
+              </button>
+            </div>
+
+            <form class="day-form" id="stop-form">
+              <div class="field-grid">
+                <label class="field">
+                  <span>Day title</span>
+                  <input
+                    id="day-title"
+                    name="dayTitle"
+                    type="text"
+                    value="Saturday in Paris"
+                    placeholder="Saturday in Paris"
+                  />
+                </label>
+
+                <label class="field">
+                  <span>City</span>
+                  <input
+                    id="day-city"
+                    name="city"
+                    type="text"
+                    value="Paris"
+                    placeholder="Paris"
+                  />
+                </label>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="panel-head">
+                <div>
+                  <p class="panel-label">Add stop</p>
+                  <p class="subtle">
+                    Search by place name or street address. Pick a result to lock
+                    in the coordinates Citymapper needs.
+                  </p>
+                </div>
+              </div>
+
+              <div class="field-grid">
+                <label class="field">
+                  <span>Place type</span>
+                  <select id="stop-type" name="type">
+                    <option value="Coffee">Coffee</option>
+                    <option value="Museum">Museum</option>
+                    <option value="Store">Store</option>
+                    <option value="Lunch">Lunch</option>
+                    <option value="Walk">Walk</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span>Time</span>
+                  <input id="stop-time" name="time" type="time" />
+                </label>
+              </div>
+
+              <label class="field">
+                <span>Search for a location</span>
+                <div class="search-row">
+                  <input
+                    id="stop-query"
+                    name="query"
+                    type="text"
+                    placeholder="Bourse de Commerce, Paris"
+                    autocomplete="off"
+                    required
+                  />
+                  <button class="button button-secondary" id="search-button" type="button">
+                    Find
+                  </button>
+                </div>
+              </label>
+
+              <div class="results-shell" id="search-results" hidden>
+                <p class="results-title">Choose a result</p>
+                <div class="results-list" id="results-list"></div>
+              </div>
+
+              <label class="field">
+                <span>Notes</span>
+                <textarea
+                  id="stop-notes"
+                  name="notes"
+                  rows="3"
+                  placeholder="Optional note: reservation at 12:30, best entrance, gift shop, etc."
+                ></textarea>
+              </label>
+
+              <div class="form-actions">
+                <div class="selection-status" id="selection-status">
+                  No place selected yet.
+                </div>
+                <button class="button button-primary" type="submit">
+                  Add Stop To Day
+                </button>
+              </div>
+            </form>
+          </article>
+
+          <aside class="panel side-panel">
+            <div class="panel-head">
+              <div>
+                <p class="panel-label">Stops</p>
+                <h3>Your route stack</h3>
+              </div>
+              <button class="ghost-button" id="clear-all" type="button">
+                Clear All
+              </button>
+            </div>
+            <p class="subtle">
+              Reorder stops with the arrows. Each adjacent pair becomes one
+              Citymapper leg in the generated itinerary.
+            </p>
+            <div class="stop-list" id="stop-list"></div>
+          </aside>
+        </section>
+
+        <section class="itinerary-section reveal" id="itinerary">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Itinerary</p>
+              <h2 id="itinerary-title">Saturday in Paris</h2>
+            </div>
+            <div class="itinerary-summary" id="itinerary-summary">
+              Add at least two stops to generate route legs.
+            </div>
+          </div>
+
+          <div class="itinerary-grid">
+            <article class="panel timeline-panel">
+              <div class="panel-head">
+                <div>
+                  <p class="panel-label">Stops</p>
+                  <h3>Planned sequence</h3>
+                </div>
+              </div>
+              <div class="timeline" id="timeline"></div>
+            </article>
+
+            <article class="panel legs-panel">
+              <div class="panel-head">
+                <div>
+                  <p class="panel-label">Directions</p>
+                  <h3>Citymapper legs</h3>
+                </div>
+              </div>
+              <div class="legs-list" id="legs-list"></div>
+              <div class="saved-plan-actions">
+                <button class="button button-primary" id="save-day" type="button">
+                  Save Day
+                </button>
+              </div>
+            </article>
+          </div>
+        </section>
+
+      </main>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
