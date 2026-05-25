@@ -167,6 +167,10 @@ h3 {
   padding: 44px 0 64px;
 }
 
+.hero-copy {
+  min-width: 0;
+}
+
 .eyebrow,
 .panel-label,
 .stop-chip,
@@ -510,14 +514,17 @@ h3 {
 
 .stop-list,
 .timeline,
-.legs-list {
+.legs-list,
+.saved-plans,
+.saved-plan-links {
   display: grid;
   gap: 14px;
 }
 
 .stop-card,
 .timeline-stop,
-.leg-card {
+.leg-card,
+.saved-plan-card {
   padding: 18px;
   border: 1px solid rgba(21, 17, 13, 0.1);
   border-radius: 22px;
@@ -526,7 +533,8 @@ h3 {
 
 .stop-head,
 .timeline-head,
-.leg-head {
+.leg-head,
+.saved-plan-head {
   display: flex;
   justify-content: space-between;
   gap: 12px;
@@ -651,14 +659,16 @@ h3 {
   color: var(--muted);
 }
 
-.stop-body {
+.stop-body,
+.saved-plan-body {
   display: grid;
   grid-template-columns: 92px 1fr;
   gap: 14px;
   align-items: start;
 }
 
-.stop-thumb {
+.stop-thumb,
+.saved-plan-thumb {
   width: 92px;
   height: 92px;
   object-fit: cover;
@@ -666,10 +676,41 @@ h3 {
   background: rgba(21, 17, 13, 0.08);
 }
 
+.saved-plans {
+  margin-top: 18px;
+}
+
+.saved-plan-card h4 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+
+.saved-plan-meta,
+.saved-plan-links a {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.saved-plan-links a {
+  text-decoration: none;
+}
+
+.saved-route-link {
+  display: inline-flex;
+  padding: 10px 12px;
+  border: 1px solid rgba(21, 17, 13, 0.1);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.56);
+}
+
 .saved-plan-actions {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.saved-plan-links {
   margin-top: 12px;
 }
 
@@ -707,13 +748,14 @@ code {
   }
 
   .hero-orbit {
-    min-height: 380px;
+    min-height: 360px;
   }
 }
 
 @media (max-width: 720px) {
   .page-shell {
     width: min(100% - 20px, 1240px);
+    padding-top: 14px;
   }
 
   .site-header,
@@ -729,12 +771,23 @@ code {
 
   .auth-compact {
     justify-content: stretch;
+    padding: 12px;
+    border-radius: 20px;
   }
 
   .auth-compact input,
   .auth-inline-status {
     width: 100%;
     min-width: 0;
+  }
+
+  .auth-compact .button,
+  .auth-compact .ghost-button {
+    width: 100%;
+  }
+
+  .auth-inline-status {
+    margin-top: 2px;
   }
 
   .field-grid {
@@ -745,11 +798,27 @@ code {
     display: grid;
   }
 
-  .stop-body {
+  .action-row,
+  .saved-plan-actions,
+  .saved-plan-links {
+    display: grid;
+  }
+
+  .action-row .button,
+  .saved-plan-actions .button,
+  .saved-plan-actions .mini-button,
+  .saved-route-link {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .stop-body,
+  .saved-plan-body {
     grid-template-columns: 1fr;
   }
 
-  .stop-thumb {
+  .stop-thumb,
+  .saved-plan-thumb {
     width: 100%;
     height: 180px;
   }
@@ -758,13 +827,103 @@ code {
     text-align: left;
   }
 
+  h1 {
+    max-width: 11ch;
+    font-size: clamp(2.8rem, 13vw, 4.5rem);
+  }
+
+  .lede {
+    margin-top: 18px;
+    font-size: 1rem;
+    line-height: 1.65;
+  }
+
+  .hero {
+    gap: 20px;
+    padding: 18px 0 40px;
+  }
+
+  .hero-actions .button {
+    width: 100%;
+  }
+
+  .hero-orbit {
+    min-height: 300px;
+  }
+
+  .orb-core {
+    width: min(62vw, 250px);
+  }
+
+  .orb-sticker {
+    width: min(44vw, 170px);
+  }
+
+  .orb-ring-one {
+    width: min(76vw, 320px);
+  }
+
+  .orb-ring-two {
+    width: min(90vw, 380px);
+  }
+
+  .signal-card {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    width: min(100%, 280px);
+    margin-top: 210px;
+    padding: 14px 16px;
+  }
+
+  .planner-panel,
+  .side-panel,
+  .timeline-panel,
+  .legs-panel,
+  .action-panel,
+    .info-grid .panel {
+    padding: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .site-header {
+    gap: 10px;
+    padding-bottom: 16px;
+  }
+
+  .site-nav {
+    gap: 14px;
+    font-size: 0.95rem;
+  }
+
+  .auth-compact-label {
+    width: 100%;
+  }
+
   .planner-panel,
   .side-panel,
   .timeline-panel,
   .legs-panel,
   .action-panel,
   .info-grid .panel {
-    padding: 22px;
+    padding: 18px;
+    border-radius: 22px;
+  }
+
+  .field input,
+  .field select,
+  .field textarea {
+    padding: 13px 14px;
+    border-radius: 16px;
+  }
+
+  .stop-card,
+  .timeline-stop,
+  .leg-card,
+  .saved-plan-card {
+    padding: 16px;
+    border-radius: 18px;
   }
 }
 

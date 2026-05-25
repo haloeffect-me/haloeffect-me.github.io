@@ -51,12 +51,13 @@ const saveDayButton = document.querySelector("#save-day");
 const loadDayButton = document.querySelector("#load-day");
 const shareWhatsappButton = document.querySelector("#share-whatsapp");
 const shareStatus = document.querySelector("#share-status");
+const savedPlans = document.querySelector("#saved-plans");
 
 const state = {
   selectedResult: null,
   stops: [],
   currentUser: null,
-  saveFlashTimeoutId: null,
+  activePlanId: null,
 };
 
 const STORAGE_KEYS = {
@@ -148,18 +149,21 @@ function saveUsers(users) {
 }
 
 function getPlanStorageKey(username) {
-  return `halo-effect-plan-${username}`;
+  return `halo-effect-plans-${username}`;
 }
 
 function getCurrentPlan() {
   return {
+    id: state.activePlanId,
     dayTitle: dayTitleInput.value.trim() || "My Day",
     city: dayCityInput.value.trim(),
     stops: state.stops,
+    savedAt: new Date().toISOString(),
   };
 }
 
 function applyPlan(plan) {
+  state.activePlanId = plan.id || null;
   dayTitleInput.value = plan.dayTitle || "My Day";
   dayCityInput.value = plan.city || "";
   state.stops = Array.isArray(plan.stops) ? plan.stops : [];
@@ -412,9 +416,104 @@ function jumpToItinerary() {
 function refreshSessionUi() {
   if (state.currentUser) {
     setAuthStatus(`Signed in as ${state.currentUser}.`, true);
+    renderSavedPlans();
   } else {
     setAuthStatus("Not signed in.", false);
+    savedPlans.innerHTML =
+      '<div class="empty-state">Sign in to keep multiple saved itineraries on this device.</div>';
   }
+}
+
+function getSavedPlans() {
+  if (!state.currentUser) {
+    return [];
+  }
+
+  try {
+    return JSON.parse(localStorage.getItem(getPlanStorageKey(state.currentUser)) || "[]");
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveSavedPlans(plans) {
+  if (!state.currentUser) {
+    return;
+  }
+
+  localStorage.setItem(getPlanStorageKey(state.currentUser), JSON.stringify(plans));
+}
+
+function renderSavedPlans() {
+  if (!state.currentUser) {
+    return;
+  }
+
+  const plans = getSavedPlans();
+
+  if (plans.length === 0) {
+    savedPlans.innerHTML =
+      '<div class="empty-state">No saved itineraries yet. Save the current day to keep it here.</div>';
+    return;
+  }
+
+  savedPlans.innerHTML = plans
+    .slice()
+    .sort((a, b) => new Date(b.savedAt || 0) - new Date(a.savedAt || 0))
+    .map((plan) => {
+      const leadStop = plan.stops?.[0];
+      const routeLinks =
+        plan.stops && plan.stops.length > 1
+          ? plan.stops
+              .slice(0, -1)
+              .map((stop, index) => {
+                const next = plan.stops[index + 1];
+                return `<a class="saved-route-link" href="${makeCitymapperLink(
+                  stop,
+                  next
+                )}" target="_blank" rel="noreferrer">Leg ${index + 1}: ${escapeHtml(
+                  stop.name
+                )} to ${escapeHtml(next.name)}</a>`;
+              })
+              .join("")
+          : '<div class="empty-state">Add at least two stops to create route links.</div>';
+
+      return `
+        <article class="saved-plan-card">
+          <div class="saved-plan-head">
+            <div>
+              <span class="stop-chip">${escapeHtml(plan.city || "Saved day")}</span>
+              <h4>${escapeHtml(plan.dayTitle || "Untitled day")}</h4>
+              <div class="saved-plan-meta">${plan.stops?.length || 0} stops</div>
+            </div>
+          </div>
+          <div class="saved-plan-body">
+            ${
+              leadStop?.imageUrl
+                ? `<img class="saved-plan-thumb" src="${escapeHtml(leadStop.imageUrl)}" alt="${escapeHtml(
+                    leadStop.imageAlt || leadStop.name
+                  )}" loading="lazy" />`
+                : `<div class="saved-plan-thumb" aria-hidden="true"></div>`
+            }
+            <div>
+              <div class="saved-plan-meta">
+                Last saved ${new Date(plan.savedAt).toLocaleString()}
+              </div>
+              <div class="saved-plan-actions">
+                <button class="mini-button" type="button" data-plan-action="open" data-plan-id="${escapeHtml(
+                  plan.id
+                )}">Open</button>
+                <button class="mini-button" type="button" data-plan-action="delete" data-plan-id="${escapeHtml(
+                  plan.id
+                )}">Delete</button>
+              </div>
+              <div class="saved-plan-links">${routeLinks}</div>
+            </div>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
 }
 
 function generateShareText() {
@@ -663,7 +762,10 @@ function resetAccount() {
     localStorage.removeItem(STORAGE_KEYS.session);
   }
 
+  state.activePlanId = null;
   authForm.reset();
+  savedPlans.innerHTML =
+    '<div class="empty-state">Account reset. Create a new local account or sign in again.</div>';
   setAuthStatus(`Reset local account ${username}.`, true);
 }
 
@@ -673,10 +775,22 @@ function savePlan() {
     return;
   }
 
-  localStorage.setItem(
-    getPlanStorageKey(state.currentUser),
-    JSON.stringify(getCurrentPlan())
-  );
+  const plans = getSavedPlans();
+  const currentPlan = getCurrentPlan();
+  const planId = currentPlan.id || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const nextPlan = { ...currentPlan, id: planId, savedAt: new Date().toISOString() };
+  const existingIndex = plans.findIndex((plan) => plan.id === planId);
+
+  state.activePlanId = planId;
+
+  if (existingIndex >= 0) {
+    plans[existingIndex] = nextPlan;
+  } else {
+    plans.push(nextPlan);
+  }
+
+  saveSavedPlans(plans);
+  renderSavedPlans();
   setShareStatus(`Saved for ${state.currentUser}.`, true);
 }
 
@@ -686,20 +800,16 @@ function loadSavedPlan() {
     return;
   }
 
-  const raw = localStorage.getItem(getPlanStorageKey(state.currentUser));
+  const plans = getSavedPlans();
 
-  if (!raw) {
-    setShareStatus(`No saved itinerary found for ${state.currentUser}.`, false);
+  if (plans.length === 0) {
+    setShareStatus(`No saved itineraries found for ${state.currentUser}.`, false);
     return;
   }
 
-  try {
-    applyPlan(JSON.parse(raw));
-    setShareStatus(`Loaded saved itinerary for ${state.currentUser}.`, true);
-    jumpToItinerary();
-  } catch (error) {
-    setShareStatus("Saved itinerary could not be read.", false);
-  }
+  applyPlan(plans[plans.length - 1]);
+  setShareStatus(`Loaded the latest saved itinerary for ${state.currentUser}.`, true);
+  jumpToItinerary();
 }
 
 function restoreSession() {
@@ -714,6 +824,37 @@ function restoreSession() {
   authUsernameInput.value = savedUser;
   refreshSessionUi();
 }
+
+savedPlans.addEventListener("click", (event) => {
+  const trigger = event.target.closest("[data-plan-action]");
+
+  if (!trigger || !state.currentUser) {
+    return;
+  }
+
+  const planId = trigger.dataset.planId;
+  const action = trigger.dataset.planAction;
+  const plans = getSavedPlans();
+  const plan = plans.find((item) => item.id === planId);
+
+  if (action === "open" && plan) {
+    applyPlan(plan);
+    setShareStatus(`Opened ${plan.dayTitle}.`, true);
+    jumpToItinerary();
+  }
+
+  if (action === "delete") {
+    const remainingPlans = plans.filter((item) => item.id !== planId);
+    saveSavedPlans(remainingPlans);
+
+    if (state.activePlanId === planId) {
+      state.activePlanId = null;
+    }
+
+    renderSavedPlans();
+    setShareStatus("Deleted saved itinerary.", true);
+  }
+});
 
 stopList.addEventListener("click", (event) => {
   const trigger = event.target.closest("[data-action]");
@@ -769,6 +910,7 @@ loadDemoButton.addEventListener("click", () => {
 
 clearAllButton.addEventListener("click", () => {
   state.stops = [];
+  state.activePlanId = null;
   renderItinerary();
 });
 
