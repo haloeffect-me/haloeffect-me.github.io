@@ -580,6 +580,7 @@ async function searchPlaces() {
     q: city ? `${query}, ${city}` : query,
     format: "jsonv2",
     addressdetails: "1",
+    extratags: "1",
     limit: "5",
   }).toString();
 
