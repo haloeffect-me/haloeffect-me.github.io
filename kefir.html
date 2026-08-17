@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kefir | Ingredient Calculator</title>
+    <meta name="description" content="Scale water and sugar quantities from your available bacteria." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="site-header">
+        <a class="brand" href="index.html">Halo Effect</a>
+        <nav class="site-nav" aria-label="Primary">
+          <a href="index.html">Planner</a>
+          <a href="kefir.html" aria-current="page">Kefir</a>
+        </nav>
+      </header>
+
+      <main id="top">
+        <section class="kefir-hero reveal">
+          <p class="eyebrow">Kefir</p>
+          <h1>Scale your mix.</h1>
+          <p class="lede">A simple produit en croix calculator for your bacteria, water, and sugar recipe.</p>
+        </section>
+
+        <section class="recipe-section reveal" aria-labelledby="calculator-title">
+          <article class="panel panel-highlight recipe-calculator">
+            <div class="panel-head">
+              <div>
+                <p class="panel-label">Produit en croix</p>
+                <h2 id="calculator-title">Your quantities.</h2>
+              </div>
+              <span class="recipe-ratio">500 g water · 30 g bacteria · 25 g sugar</span>
+            </div>
+            <p class="subtle">Enter the amount of bacteria you have and we’ll calculate the water and sugar needed.</p>
+            <div class="recipe-input-row">
+              <label class="field">
+                <span>Current bacteria (g)</span>
+                <input id="bacteria-grams" type="number" inputmode="decimal" min="0" step="any" placeholder="e.g. 30" aria-describedby="recipe-message" autofocus />
+              </label>
+            </div>
+            <div class="recipe-results" aria-live="polite">
+              <div class="recipe-result"><span>Water needed</span><strong id="water-result">—</strong></div>
+              <div class="recipe-result"><span>Sugar needed</span><strong id="sugar-result">—</strong></div>
+            </div>
+            <p class="recipe-message subtle" id="recipe-message">Enter a bacteria amount to begin.</p>
+          </article>
+        </section>
+      </main>
+    </div>
+    <script src="kefir.js"></script>
+  </body>
+</html>

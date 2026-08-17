@@ -349,6 +349,15 @@ h3 {
   margin: 0 0 72px;
 }
 
+.kefir-hero {
+  max-width: 680px;
+  padding: 70px 0 48px;
+}
+
+.kefir-hero h1 {
+  max-width: none;
+}
+
 .recipe-calculator {
   max-width: 780px;
   margin: 0 auto;

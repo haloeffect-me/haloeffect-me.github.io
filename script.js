@@ -42,10 +42,6 @@ const loadDemoButton = document.querySelector("#load-demo");
 const clearAllButton = document.querySelector("#clear-all");
 const shareWhatsappBottomButton = document.querySelector("#share-whatsapp-bottom");
 const shareStatus = document.querySelector("#share-status");
-const bacteriaGramsInput = document.querySelector("#bacteria-grams");
-const waterResult = document.querySelector("#water-result");
-const sugarResult = document.querySelector("#sugar-result");
-const recipeMessage = document.querySelector("#recipe-message");
 
 const state = {
   selectedResult: null,
@@ -95,34 +91,6 @@ const demoStops = [
     websiteUrl: "https://merci-merci.com/en",
   },
 ];
-
-function formatGrams(value) {
-  return `${new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: 2,
-  }).format(value)} g`;
-}
-
-function updateRecipeCalculator() {
-  const bacteria = Number(bacteriaGramsInput.value);
-
-  if (!bacteriaGramsInput.value.trim()) {
-    waterResult.textContent = "—";
-    sugarResult.textContent = "—";
-    recipeMessage.textContent = "Enter a bacteria amount to begin.";
-    return;
-  }
-
-  if (!Number.isFinite(bacteria) || bacteria < 0) {
-    waterResult.textContent = "—";
-    sugarResult.textContent = "—";
-    recipeMessage.textContent = "Please enter a valid positive amount.";
-    return;
-  }
-
-  waterResult.textContent = formatGrams((bacteria * 500) / 30);
-  sugarResult.textContent = formatGrams((bacteria * 25) / 30);
-  recipeMessage.textContent = `For ${formatGrams(bacteria)} of bacteria.`;
-}
 
 function escapeHtml(value) {
   return value
@@ -595,7 +563,6 @@ stopQueryInput.addEventListener("keydown", (event) => {
 
 stopForm.addEventListener("submit", addStop);
 shareWhatsappBottomButton.addEventListener("click", shareOnWhatsapp);
-bacteriaGramsInput.addEventListener("input", updateRecipeCalculator);
 
 dayTitleInput.addEventListener("input", renderItinerary);
 
