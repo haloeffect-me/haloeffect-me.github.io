@@ -345,6 +345,68 @@ h3 {
   margin-bottom: 18px;
 }
 
+.recipe-section {
+  margin: 0 0 72px;
+}
+
+.recipe-calculator {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 30px 32px;
+}
+
+.recipe-ratio {
+  max-width: 28ch;
+  color: var(--accent-strong);
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: right;
+}
+
+.recipe-calculator > .subtle {
+  margin: 18px 0 22px;
+  line-height: 1.6;
+}
+
+.recipe-input-row {
+  max-width: 360px;
+}
+
+.recipe-results {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 6px;
+}
+
+.recipe-result {
+  padding: 18px;
+  border: 1px solid rgba(21, 17, 13, 0.1);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.52);
+}
+
+.recipe-result span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.recipe-result strong {
+  display: block;
+  margin-top: 7px;
+  color: var(--accent-strong);
+  font-family: "Fraunces", serif;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  line-height: 1;
+}
+
+.recipe-message {
+  min-height: 1.6em;
+  margin: 16px 0 0;
+}
+
 .planner-layout {
   grid-template-columns: 1.15fr 0.85fr;
   align-items: start;
@@ -798,6 +860,14 @@ code {
     grid-template-columns: 1fr;
   }
 
+  .recipe-calculator {
+    padding: 26px;
+  }
+
+  .recipe-ratio {
+    text-align: left;
+  }
+
   .search-row {
     display: grid;
   }
@@ -902,6 +972,10 @@ code {
   .info-grid .panel {
     padding: 18px;
     border-radius: 22px;
+  }
+
+  .recipe-results {
+    grid-template-columns: 1fr;
   }
 
   .field input,

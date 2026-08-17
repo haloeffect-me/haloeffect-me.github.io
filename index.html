@@ -27,6 +27,7 @@
       <header class="site-header">
         <a class="brand" href="#top">Halo Effect</a>
         <nav class="site-nav" aria-label="Primary">
+          <a href="#recipe-calculator">Recipe calculator</a>
           <a href="#planner">Planner</a>
           <a href="#itinerary">Itinerary</a>
         </nav>
@@ -61,6 +62,48 @@
               <strong>"Let me show you Paris, you Frenchman."</strong>
             </div>
           </div>
+        </section>
+
+        <section class="recipe-section reveal" id="recipe-calculator">
+          <article class="panel panel-highlight recipe-calculator">
+            <div class="panel-head">
+              <div>
+                <p class="panel-label">Produit en croix</p>
+                <h2>Scale your mix.</h2>
+              </div>
+              <span class="recipe-ratio">500 g water · 30 g bacteria · 25 g sugar</span>
+            </div>
+            <p class="subtle">
+              Enter the amount of bacteria you have and we’ll calculate the water and sugar needed.
+            </p>
+
+            <div class="recipe-input-row">
+              <label class="field">
+                <span>Current bacteria (g)</span>
+                <input
+                  id="bacteria-grams"
+                  type="number"
+                  inputmode="decimal"
+                  min="0"
+                  step="any"
+                  placeholder="e.g. 30"
+                  aria-describedby="recipe-message"
+                />
+              </label>
+            </div>
+
+            <div class="recipe-results" aria-live="polite">
+              <div class="recipe-result">
+                <span>Water needed</span>
+                <strong id="water-result">—</strong>
+              </div>
+              <div class="recipe-result">
+                <span>Sugar needed</span>
+                <strong id="sugar-result">—</strong>
+              </div>
+            </div>
+            <p class="recipe-message subtle" id="recipe-message">Enter a bacteria amount to begin.</p>
+          </article>
         </section>
 
         <section class="planner-layout reveal" id="planner">
